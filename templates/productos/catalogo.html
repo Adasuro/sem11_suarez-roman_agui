@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Catálogo de Productos | Arquitectura MTV{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- CABECERA DEL CATÁLOGO (CBV LISTVIEW) -->
+    <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center space-x-2 text-xs text-slate-500 mb-1">
+                <a href="{% url 'productos:home' %}" class="hover:text-emerald-700 transition">Inicio</a>
+                <span>/</span>
+                <span class="text-slate-700 font-semibold">Catálogo</span>
+                {% if categoria_seleccionada != 'Todas' %}
+                    <span>/</span>
+                    <span class="text-emerald-700 font-bold">{{ categoria_seleccionada|title }}</span>
+                {% endif %}
+            </div>
+            <h1 class="text-2xl font-extrabold text-slate-900">{{ titulo_catalogo }}</h1>
+            <p class="text-xs text-slate-500 mt-1">
+                Visualización mediante Class-Based View (<code>ProductoListView</code>) &bull; Consulta generada el {{ fecha_consulta|date:"d/m/Y \a \l\a\s H:i:s" }}
+            </p>
+        </div>
+
+        <!-- INSIGNIA DE RESULTADOS -->
+        <div class="flex items-center space-x-3">
+            <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-sm">
+                <i class="fa-solid fa-list-check mr-2 text-emerald-600"></i>
+                Total items: {{ total_resultados }}
+            </span>
+            <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-200">
+                <i class="fa-solid fa-filter mr-2 text-slate-500"></i>
+                Filtro: {{ categoria_seleccionada|title }}
+            </span>
+        </div>
+    </div>
+
+    <!-- BARRA DE HERRAMIENTAS: BÚSQUEDA Y FILTRADO POR CATEGORÍAS -->
+    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        
+        <!-- Categorías (Sin URLs hardcodeadas) -->
+        <div class="flex flex-wrap items-center gap-1.5">
+            <span class="text-xs font-semibold text-slate-500 mr-1">Filtrar:</span>
+            <a href="{% url 'productos:catalogo' %}" 
+               class="px-2.5 py-1 rounded-md text-xs font-medium transition {% if categoria_seleccionada == 'Todas' %}bg-uncp-navy text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+                Todas
+            </a>
+            {% for cat in todas_categorias %}
+                <a href="{% url 'productos:catalogo_categoria' categoria=cat %}" 
+                   class="px-2.5 py-1 rounded-md text-xs font-medium transition {% if categoria_seleccionada|lower == cat|lower %}bg-emerald-700 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">
+                    {{ cat|title }}
+                </a>
+            {% endfor %}
+        </div>
+
+        <!-- Formulario de Búsqueda GET -->
+        <form method="get" action="{% url 'productos:catalogo' %}" class="flex items-center space-x-2 w-full md:w-auto">
+            <div class="relative w-full md:w-64">
+                <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Buscar por nombre..."
+                       class="w-full text-xs pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
+            </div>
+            <button type="submit" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-medium transition">
+                Buscar
+            </button>
+            {% if request.GET.q or categoria_seleccionada != 'Todas' %}
+                <a href="{% url 'productos:catalogo' %}" class="px-2 py-1.5 text-xs text-red-600 hover:text-red-800" title="Limpiar filtros">
+                    <i class="fa-solid fa-xmark"></i>
+                </a>
+            {% endif %}
+        </form>
+    </div>
+
+    {# GRILLA DE PRODUCTOS: bucles for, condiciones if, filtros title, date, floatformat #}
+    {% if productos %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for producto in productos %}
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                    <div class="p-5">
+                        <!-- Etiquetas de Categoría y Disponibilidad -->
+                        <div class="flex items-center justify-between gap-2 mb-3">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                <i class="fa-solid fa-tag text-[10px] mr-1 text-emerald-600"></i>
+                                {{ producto.categoria|title }}
+                            </span>
+                            
+                            {# Condición if sobre propiedad del modelo #}
+                            {% if producto.en_stock %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-green-100 text-green-800">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-600 mr-1.5 animate-pulse"></span> Stock: {{ producto.stock }}
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-red-100 text-red-800">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-red-600 mr-1.5"></span> Sin Stock
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Nombre con filtro |title -->
+                        <h2 class="text-lg font-bold text-slate-900 mb-2 leading-snug">
+                            {{ producto.nombre|title }}
+                        </h2>
+
+                        <!-- Descripción -->
+                        <p class="text-xs text-slate-500 leading-relaxed mb-4">
+                            {{ producto.descripcion|default:"Este producto no cuenta con descripción detallada en catálogo." }}
+                        </p>
+                    </div>
+
+                    <!-- Pie de la Tarjeta: Precio y Fecha con filtros -->
+                    <div class="bg-slate-50 px-5 py-3 border-t border-slate-100 flex items-center justify-between">
+                        <div>
+                            <span class="block text-[10px] uppercase font-bold text-slate-400">Precio Unitario</span>
+                            <span class="text-lg font-extrabold text-slate-900">
+                                S/. {{ producto.precio|floatformat:2 }}
+                            </span>
+                        </div>
+                        <div class="text-right">
+                            <span class="block text-[10px] uppercase font-bold text-slate-400">Ingreso (Filtro date)</span>
+                            <span class="text-xs text-slate-600 font-medium">
+                                {{ producto.fecha_creacion|date:"d/m/Y" }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- PAGINACIÓN CON CONTROLES NATIVOS DE LISTVIEW -->
+        {% if is_paginated %}
+            <div class="flex justify-center items-center space-x-2 pt-6">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" 
+                       class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 transition">
+                        <i class="fa-solid fa-chevron-left mr-1"></i> Anterior
+                    </a>
+                {% endif %}
+
+                <span class="text-xs font-semibold text-slate-600 px-3 py-1.5">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" 
+                       class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 transition">
+                        Siguiente <i class="fa-solid fa-chevron-right ml-1"></i>
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+
+    {% else %}
+        {# Caso vacío o sin coincidencias de filtro #}
+        <div class="bg-white rounded-xl border border-slate-200 p-12 text-center max-w-lg mx-auto shadow-sm">
+            <div class="w-16 h-16 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-2xl mx-auto mb-4">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-800 mb-1">No se encontraron productos</h3>
+            <p class="text-xs text-slate-500 mb-4">
+                No existen registros que coincidan con la categoría o término buscado en la base de datos.
+            </p>
+            <a href="{% url 'productos:catalogo' %}" class="inline-flex items-center px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium transition">
+                <i class="fa-solid fa-arrow-rotate-left mr-2"></i> Restablecer Catálogo
+            </a>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

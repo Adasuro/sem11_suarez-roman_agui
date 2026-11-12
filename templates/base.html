@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Django 5.x - Arquitectura MTV{% endblock %} | UNCP FIS</title>
+    <!-- Tailwind CSS CDN para diseño moderno y responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        uncp: {
+                            navy: '#0C2340',
+                            green: '#006837',
+                            gold: '#C26E00',
+                            light: '#F8FAFC',
+                            slate: '#334155'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome para iconografía profesional -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen font-sans antialiased">
+
+    <!-- BARRA SUPERIOR INSTITUCIONAL -->
+    <div class="bg-uncp-navy text-white text-xs py-2 px-4 shadow-sm border-b border-slate-700">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
+            <div class="flex items-center space-x-3">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-800 text-emerald-100">
+                    <i class="fa-solid fa-graduation-cap mr-1.5"></i> UNCP - FIS
+                </span>
+                <span class="text-slate-300">Desarrollo de Aplicaciones Web (IS093A) &bull; Semana 11</span>
+            </div>
+            <div class="flex items-center space-x-4 text-slate-300">
+                <span><i class="fa-solid fa-user-check text-emerald-400 mr-1"></i> <strong>Estudiante:</strong> Arlette Suárez Román</span>
+                <span class="hidden md:inline text-slate-500">|</span>
+                <span class="hidden md:inline"><i class="fa-solid fa-chalkboard-user text-amber-400 mr-1"></i> <strong>Docente:</strong> Ing. Miguel Aguilar</span>
+            </div>
+        </div>
+    </div>
+
+    {# NAVBAR PRINCIPAL CON ENLACES DINÁMICOS MEDIANTE URLS NOMBRADAS #}
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logotipo / Título -->
+                <a href="{% url 'productos:home' %}" class="flex items-center space-x-3 group">
+                    <div class="w-10 h-10 rounded-lg bg-uncp-navy flex items-center justify-center text-white font-bold text-lg shadow-md group-hover:bg-emerald-700 transition">
+                        <i class="fa-brands fa-python text-emerald-400 text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-slate-900 group-hover:text-emerald-700 transition leading-tight">
+                            Django MTV Core
+                        </h1>
+                        <p class="text-xs text-slate-500">Laboratorio Semana 11: URLs, Vistas y ORM</p>
+                    </div>
+                </a>
+
+                <!-- Navegación sin URLs hardcodeadas -->
+                <nav class="flex items-center space-x-2 sm:space-x-4">
+                    <a href="{% url 'productos:home' %}" 
+                       class="px-3 py-2 rounded-md text-sm font-medium transition flex items-center space-x-1.5 {% if request.resolver_match.url_name == 'home' %}bg-slate-100 text-uncp-navy font-semibold border-b-2 border-uncp-navy{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                        <i class="fa-solid fa-house text-xs"></i>
+                        <span>Inicio (FBV)</span>
+                    </a>
+                    
+                    <a href="{% url 'productos:catalogo' %}" 
+                       class="px-3 py-2 rounded-md text-sm font-medium transition flex items-center space-x-1.5 {% if 'catalogo' in request.resolver_match.url_name %}bg-slate-100 text-uncp-navy font-semibold border-b-2 border-uncp-navy{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                        <i class="fa-solid fa-boxes-stacked text-xs"></i>
+                        <span>Catálogo (CBV)</span>
+                    </a>
+
+                    <a href="/admin/" target="_blank"
+                       class="hidden sm:inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-md bg-slate-800 text-white hover:bg-slate-700 transition shadow-sm">
+                        <i class="fa-solid fa-shield-halved mr-1.5 text-amber-400"></i> Django Admin
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL DINÁMICO (HERENCIA MEDIANTE BLOQUES) -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {% block content %}
+        <!-- El contenido específico de cada vista se inyecta aquí -->
+        {% endblock %}
+    </main>
+
+    <!-- FOOTER INSTITUCIONAL -->
+    <footer class="bg-uncp-navy text-slate-300 border-t border-slate-800 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                <div>
+                    <h3 class="text-white font-bold text-base mb-2 flex items-center space-x-2">
+                        <i class="fa-solid fa-layer-group text-emerald-400"></i>
+                        <span>Arquitectura MTV Django</span>
+                    </h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Implementación práctica del patrón Model-Template-View con vistas basadas en funciones (FBV), vistas basadas en clases (CBV ListView) y persistencia SQLite.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-white font-bold text-base mb-2 flex items-center space-x-2">
+                        <i class="fa-solid fa-code text-amber-400"></i>
+                        <span>Reglas de Laboratorio</span>
+                    </h3>
+                    <ul class="text-xs text-slate-400 space-y-1">
+                        <li>&bull; Sin URLs hardcodeadas ({% templatetag openblock %} url '...' {% templatetag closeblock %})</li>
+                        <li>&bull; Lógica de negocio encapsulada en Modelos ORM</li>
+                        <li>&bull; Uso estricto de gitignore para db.sqlite3 y venv</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-white font-bold text-base mb-2 flex items-center space-x-2">
+                        <i class="fa-solid fa-university text-emerald-400"></i>
+                        <span>Universidad Nacional del Centro del Perú</span>
+                    </h3>
+                    <p class="text-xs text-slate-400">
+                        Facultad de Ingeniería de Sistemas<br>
+                        Huancayo, Perú &bull; Semestre 2026-II
+                    </p>
+                </div>
+            </div>
+            <div class="border-t border-slate-800 mt-6 pt-4 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500">
+                <p>&copy; 2026 Arlette Suárez Román. Todos los derechos reservados.</p>
+                <p class="mt-2 sm:mt-0">Desarrollo Web Fullstack &bull; Práctica Calificada Semana 11</p>
+            </div>
+        </div>
+    </footer>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

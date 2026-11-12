@@ -1,0 +1,11 @@
+# Entornos virtuales Python
+venv/
+.venv/
+
+# Base de datos SQLite (Regla técnica: Nunca commitear db.sqlite3)
+*.sqlite3
+db.sqlite3
+
+# Bytecode de Python
+__pycache__/
+*.py[cod]
